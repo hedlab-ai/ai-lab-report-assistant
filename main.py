@@ -89,7 +89,11 @@ with single_tab:
 
             if "lab_advice" not in st.session_state:
                 st.session_state.lab_advice = None
-
+            if "ai_requests" not in st.session_state:
+                st.session_state.ai_requests = 0
+                st.caption(
+    f"🤖 KI-Nutzung: {st.session_state.ai_requests}/3 Anfragen in dieser Sitzung"
+)
             replicate_df = detect_replicates(df)
             replicate_precision_df = analyze_replicate_precision(df)
             quality_score, quality_comments = evaluate_data_quality(
@@ -128,8 +132,13 @@ with single_tab:
                 replicate_precision_df,
             )
 
-            if st.button("🔬 Analyse starten", type="primary"):
-                with st.spinner("🤖 KI analysiert die Versuchsdaten..."):
+            
+            if st.button(
+            "🔬 Analyse starten",
+            type="primary",
+            disabled=st.session_state.ai_requests >= 3,
+        ):
+                    st.session_state.ai_requests += 1
                     st.session_state.ai_text = generate_ai_report(
                         vmax,
                         km,
@@ -179,8 +188,9 @@ with single_tab:
                     key="ai_question",
                 )
 
-                if question:
-                    with st.spinner("KI beantwortet deine Frage..."):
+                if question and st.session_state.ai_requests < 3:
+                         st.session_state.ai_requests += 1
+                with st.spinner("KI beantwortet deine Frage..."):
                         answer = ask_ai(
                             question,
                             df,
@@ -190,7 +200,7 @@ with single_tab:
                             notes,
                         )
 
-                    st.success(answer)
+                st.success(answer)
 
               
 
